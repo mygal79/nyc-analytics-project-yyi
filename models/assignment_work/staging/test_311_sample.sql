@@ -1,3 +1,4 @@
 -- Quick test to verify source connection works
-select unique_key, created_date, complaint_type, borough
-from {{ source("raw", "source_service_requests_homework") }}
+SELECT unique_key, created_date, complaint_type, borough
+FROM {{ source("raw", "source_service_requests_homework") }}
+LIMIT 10
