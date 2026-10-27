@@ -96,6 +96,8 @@ cleaned AS (
    -- Deduplicate
    QUALIFY ROW_NUMBER() OVER (PARTITION BY job_filing_number ORDER BY filing_date DESC) = 1
 )
+ -- Delete 
+    
 
 SELECT * FROM cleaned
 -- All should be part of this table after running: stg_nyc_dob_job_apps
