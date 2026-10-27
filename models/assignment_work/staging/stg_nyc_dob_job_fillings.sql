@@ -2,7 +2,7 @@
 -- One row per service request
 
 WITH source AS (
-   SELECT * FROM {{ source('nyc_homework_raw_data', 'source_nyc_dob_jobs_apps') }}
+   SELECT * FROM {{ source('raw', 'source_nyc_dob_job_apps') }}
 ), -- Easier to refer to the dbt reference to a long name table this way
 
 cleaned AS (
@@ -10,50 +10,52 @@ cleaned AS (
        -- Get all columns from source, except ones we're transforming below
        -- To do cleaning on them or explicitly cast them as types just in case
        * EXCEPT (
-           unique_key,
-           created_date,
-           closed_date,
-           agency,
-           agency_name,
-           complaint_type,
-           descriptor,
-           status,
-           incident_zip,
+           job_filing_number,
+           filing_date,
+           signoff_date,
+           filing_status,
+           applicant_business_name,
+           job_type,
+	   job_description,
+           house_no,
+	    zip,
            borough,
-           incident_address,
+           postcode,
            street_name,
-           cross_street_1,
-           cross_street_2,
+           census_tract,
+           nta,
            latitude,
            longitude,
-           open_data_channel_type
+           building_type, 
+            work_on_floor
        ),
 
        -- Identifiers
-       CAST(unique_key AS STRING) AS request_id,
+       CAST(job_filing_number AS STRING) AS job_filing_num,
 
        -- Date/Time
-       CAST(created_date AS TIMESTAMP) AS created_date,
-       CAST(closed_date AS TIMESTAMP) AS closed_date,
+       CAST(filing_date AS TIMESTAMP) AS filing_date,
+       CAST(signoff_date AS TIMESTAMP) AS signoff_date,
 
-       -- Request details
-       CAST(agency AS STRING) AS agency,
-       CAST(agency_name AS STRING) AS agency_name,
-       CAST(complaint_type AS STRING) AS complaint_type,
-       CAST(descriptor AS STRING) AS descriptor,
-       UPPER(TRIM(CAST(status AS STRING))) AS status,
+       -- Job details
+       CAST(applicant_business_name AS STRING) AS applicant_name,
+       CAST(building_type AS STRING) AS building_type,
+       CAST(job_type AS STRING) AS job_type,
+       CAST(job_description AS STRING) AS job_descriptor,
+       UPPER(TRIM(CAST(filing_status AS STRING))) AS filing_status,
 
        -- Location - clean zip code, handling several common zip code data problems
        CASE
-           WHEN UPPER(TRIM(CAST(incident_zip AS STRING))) IN ('N/A', 'NA') THEN NULL
-           WHEN UPPER(TRIM(CAST(incident_zip AS STRING))) = 'ANONYMOUS' THEN 'Anonymous'
-           WHEN LENGTH(CAST(incident_zip AS STRING)) = 5 THEN CAST(incident_zip AS STRING)
-           WHEN LENGTH(CAST(incident_zip AS STRING)) = 9 THEN CAST(incident_zip AS STRING)
-           WHEN LENGTH(CAST(incident_zip AS STRING)) = 10
-               AND REGEXP_CONTAINS(CAST(incident_zip AS STRING), r'^\d{5}-\d{4}')
-           THEN CAST(incident_zip AS STRING)
+           WHEN UPPER(TRIM(CAST(postcode AS STRING))) IN ('N/A', 'NA') THEN NULL
+           WHEN UPPER(TRIM(CAST(postcode AS STRING))) = 'ANONYMOUS' THEN 'Anonymous'
+           WHEN LENGTH(CAST(postcode AS STRING)) = 5 THEN CAST(postcode AS STRING)
+           WHEN LENGTH(CAST(postcode AS STRING)) = 9 THEN CAST(postcode AS STRING)
+           WHEN LENGTH(CAST(postcode AS STRING)) = 10
+               AND REGEXP_CONTAINS(CAST(postcode AS STRING), r'^\d{5}-\d{4}')
+           THEN CAST(postcode AS STRING)
            ELSE NULL
-       END AS zip,
+       END AS postcode,
+       
 
        -- Location - standardized borough, just in case
        CASE
@@ -65,15 +67,18 @@ cleaned AS (
            ELSE 'UNKNOWN or CITYWIDE'
        END AS borough,
 
-       CAST(incident_address AS STRING) AS incident_address,
+       CAST(house_no AS STRING) AS address_house_no,
        CAST(street_name AS STRING) AS street_name,
-       CAST(cross_street_1 AS STRING) AS cross_street_1,
-       CAST(cross_street_2 AS STRING) AS cross_street_2,
+       CAST(census_tract AS STRING) AS census_tract,
+       CAST(work_on_floor AS STRING) AS work_on_floor,
        CAST(latitude AS DECIMAL) AS latitude,
        CAST(longitude AS DECIMAL) AS longitude,
+       CAST(zip AS STRING) AS applicant_zip,
+
 
        -- Clearer column name as well for this one
-       CAST(open_data_channel_type AS STRING) AS method_of_submission,
+       CAST(nta AS STRING) AS neighborhood,
+       CAST(postcode AS STRING) AS zipcode,
 
        -- Metadata
        CURRENT_TIMESTAMP() AS _stg_loaded_at
@@ -81,16 +86,17 @@ cleaned AS (
    FROM source
 
    -- Filters
-   WHERE (agency = 'DOT' OR agency_name LIKE '%Transportation%')
-   AND unique_key IS NOT NULL
-   AND created_date IS NOT NULL
-   AND CAST(created_date AS DATE) >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 YEAR)
+   
+   WHERE job_filing_number IS NOT NULL
+   AND filing_date IS NOT NULL
+   AND CAST(filing_date AS DATE) >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 YEAR)
    AND borough IS NOT NULL
+   AND postcode IS NOT NULL
 
    -- Deduplicate
-   QUALIFY ROW_NUMBER() OVER (PARTITION BY unique_key ORDER BY created_date DESC) = 1
+   QUALIFY ROW_NUMBER() OVER (PARTITION BY job_filing_number ORDER BY filing_date DESC) = 1
 )
 
 SELECT * FROM cleaned
--- All should be part of this table after running: stg_nyc_311_dot
+-- All should be part of this table after running: stg_nyc_dob_job_apps
 

@@ -1,6 +1,6 @@
 -- Clean and standardize 311 DOT service request data
 -- One row per service request
-with
+WITH
     source as (select * from {{ source('raw', 'source_service_requests_homework') }}),  -- Easier to refer to the dbt reference to a long name table this way
 
     cleaned as (
