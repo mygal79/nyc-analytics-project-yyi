@@ -2,7 +2,7 @@
 -- One row per service request
 
 WITH source AS (
-   SELECT * FROM {{ source('raw', 'SOURCE-TABLE-NAME-HERE') }}
+   SELECT * FROM {{ source('nyc_homework_raw_data', 'source_nyc_dob_jobs_apps') }}
 ), -- Easier to refer to the dbt reference to a long name table this way
 
 cleaned AS (
