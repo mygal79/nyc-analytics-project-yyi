@@ -16,9 +16,9 @@ cleaned AS (
            filing_status,
            applicant_business_name,
            job_type,
-	   job_description,
+	       job_description,
            house_no,
-	    zip,
+	       zip,
            borough,
            postcode,
            street_name,
@@ -54,7 +54,7 @@ cleaned AS (
                AND REGEXP_CONTAINS(CAST(postcode AS STRING), r'^\d{5}-\d{4}')
            THEN CAST(postcode AS STRING)
            ELSE NULL
-       END AS postcode,
+       END AS zipcode,
        
 
        -- Location - standardized borough, just in case
@@ -78,8 +78,7 @@ cleaned AS (
 
        -- Clearer column name as well for this one
        CAST(nta AS STRING) AS neighborhood,
-       CAST(postcode AS STRING) AS zipcode,
-
+       
        -- Metadata
        CURRENT_TIMESTAMP() AS _stg_loaded_at
 

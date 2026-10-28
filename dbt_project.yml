@@ -33,13 +33,7 @@ models:
        conformed:
          +materialized: table
 
-  
-
-
-$0
-
-
-$0     dob_job_filings:
+       dob_job_filings:
          +materialized: table
 
        dot_311:
