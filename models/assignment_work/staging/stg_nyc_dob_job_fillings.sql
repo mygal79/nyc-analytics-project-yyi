@@ -9,10 +9,13 @@ cleaned AS (
    SELECT
        -- Get all columns from source, except ones we're transforming below
        -- To do cleaning on them or explicitly cast them as types just in case
+       -- 
        * EXCEPT (
            job_filing_number,
            filing_date,
            signoff_date,
+           approved_date,
+           first_permit_date,
            filing_status,
            applicant_business_name,
            job_type,
@@ -27,16 +30,18 @@ cleaned AS (
            latitude,
            longitude,
            building_type, 
-            work_on_floor
+           work_on_floor
        ),
 
        -- Identifiers
        CAST(job_filing_number AS STRING) AS job_filing_num,
 
-       -- Date/Time
+       -- Date/Time [include all date columns]
        CAST(filing_date AS TIMESTAMP) AS filing_date,
        CAST(signoff_date AS TIMESTAMP) AS signoff_date,
-
+       CAST(approved_date AS TIMESTAMP) AS approved_date,
+       CAST(first_permit_date AS TIMESTAMP) AS first_permit_date,
+       
        -- Job details
        CAST(applicant_business_name AS STRING) AS applicant_name,
        CAST(building_type AS STRING) AS building_type,
@@ -88,7 +93,7 @@ cleaned AS (
    
    WHERE job_filing_number IS NOT NULL
    AND filing_date IS NOT NULL
-   AND CAST(filing_date AS DATE) >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 YEAR)
+   AND CAST(CAST(filing_date AS TIMESTAMP) AS DATE)>= DATE_SUB(CURRENT_DATE(), INTERVAL 7 YEAR)
    AND borough IS NOT NULL
    AND postcode IS NOT NULL
 
