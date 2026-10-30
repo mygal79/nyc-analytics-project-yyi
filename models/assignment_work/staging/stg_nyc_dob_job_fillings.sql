@@ -59,7 +59,7 @@ cleaned AS (
                AND REGEXP_CONTAINS(CAST(postcode AS STRING), r'^\d{5}-\d{4}')
            THEN CAST(postcode AS STRING)
            ELSE NULL
-       END AS zipcode,
+       END AS zip,
        
 
        -- Location - standardized borough, just in case
