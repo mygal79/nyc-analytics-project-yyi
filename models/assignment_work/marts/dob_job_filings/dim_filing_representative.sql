@@ -45,7 +45,7 @@ dim_filing_rep AS (
         state,
         zip
 
-    FROM distinct_filing_rep
+    FROM distinct_filing_reps
 
 ),
 
@@ -57,13 +57,13 @@ null_placeholder AS (
     SELECT
        '-1' AS filing_representative_key,
        CAST(NULL AS STRING) AS first_name,
-       CAST(NULL AS STRING) AS last_name,
        CAST(NULL AS STRING) AS middle_initial,
+       CAST(NULL AS STRING) AS last_name,
        CAST(NULL AS STRING) AS business_name,
        CAST(NULL AS STRING) AS street_name,
        CAST(NULL AS STRING) AS city,
        CAST(NULL AS STRING) AS state,
-       CAST(NULL AS STRING) AS zip,
+       CAST(NULL AS STRING) AS zip
             
 )
 
