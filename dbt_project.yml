@@ -38,3 +38,23 @@ models:
 
        dot_311:
          +materialized: table
+
+# Milestone 4 - Set up models, which are basically SQL files, to create tables
+
+   project_work:
+     staging:
+       +materialized: table
+       +schema: nyc_restaurant_data_analysis_staging
+
+     marts:
+       +materialized: table
+       +schema: nyc_restaurant_data_analysis_warehouse_marts
+      
+       conformed:
+         +materialized: table
+
+       nyc_restaurant_inspection_primary:
+         +materialized: table 
+
+       nyc_restaurant_inspection_secondary_311:
+         +materialized: table
