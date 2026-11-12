@@ -2,7 +2,7 @@ version: 2
 sources:
   - name: raw
     description: Raw data loaded from NYC Open Data
-    database: josedata26
+    database: yunnisym-cis-baruch
     schema: nyc_restaurant_data_analysis 
     tables:
       - name: nyc_restaurant_inspection_primary
@@ -17,5 +17,4 @@ sources:
           From "Group 3 Project Milestone 3 - Notes" = Secondary dataset: The 311 Service Request dataset subset, 
           filtered to DOHMH (Department of Health and Mental Hygiene) complaints for 2020-2025 period. 
           It contains information about the service request, including complaint type, responding agency - DOHMH, 
-          and geographic location. 
-          The grain is one 311 service request (complaint) responded by DOHMH for a Restaurant and Restaurant/Bar/Deli/Bakery location types.    
+          and geographic location. The grain is one 311 service request (complaint) responded by DOHMH for a Restaurant and Restaurant/Bar/Deli/Bakery location types.    
