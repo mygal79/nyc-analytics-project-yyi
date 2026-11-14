@@ -41,7 +41,7 @@ enriched AS (
             WHEN LOWER(descriptor) LIKE '%water%' THEN 'Sewage/Water/Plumbing'
             WHEN LOWER(descriptor) LIKE '%plumbing%' THEN 'Sewage/Water/Plumbing'
             WHEN LOWER(descriptor) LIKE '%pesticide%' THEN 'Toxic Chemicals/Materials'
-            WHEN LOWER(descriptor) LIKE '%other%' THEN 'other'
+            WHEN LOWER(descriptor) LIKE '%other%' THEN 'Other'
 
             ELSE 'other'
         END AS complaint_detail
