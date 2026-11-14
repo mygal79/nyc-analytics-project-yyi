@@ -1,8 +1,9 @@
--- Clean and standardize nyc_restaurant_inspection_primary service request data
--- One row per service request
+-- Purpose: to clean and standardize nyc_restaurant_inspection_primary data
+-- Grain: one row per violation cited during one DOHMH restaurant inspection, identified by camis + inspection_date + inspection_type + violation_code.
+-- Scope: inspections dated 2020-01-01 through 2025-12-31 (filtered at extraction). Inspections with no violations are kept as one row with violation_code NULL.
 
 WITH source AS (
-   SELECT * FROM {{ source('raw', 'nyc_restaurant_inspection_primary') }}
+   SELECT DISTINCT * FROM {{ source('raw', 'nyc_restaurant_inspection_primary') }} -- Source extract contains 1,245 exact-duplicate rows (each duplicated once); removed here by adding DISTINCT.
 ), -- Easier to refer to the dbt reference to a long name table this way
 
 cleaned AS (
@@ -10,86 +11,78 @@ cleaned AS (
        -- Get all columns from source, except ones we're transforming below
        -- To do cleaning on them or explicitly cast them as types just in case
        * EXCEPT (
-           unique_key,
-           created_date,
-           closed_date,
-           agency,
-           agency_name,
-           complaint_type,
-           descriptor,
-           status,
-           incident_zip,
-           borough,
-           incident_address,
-           street_name,
-           cross_street_1,
-           cross_street_2,
+           camis,
+           inspection_date,
+           grade_date,
+           record_date,           
+           violation_code,
+           violation_description,
+           critical_flag,
+           score,
+           grade,
+           inspection_type,
+           zipcode,
+           boro,
            latitude,
-           longitude,
-           open_data_channel_type
+           longitude           
        ),
 
        -- Identifiers
-       CAST(unique_key AS STRING) AS request_id,
+       CAST(camis AS STRING) AS camis,
 
        -- Date/Time
-       CAST(created_date AS TIMESTAMP) AS created_date,
-       CAST(closed_date AS TIMESTAMP) AS closed_date,
+       CAST(inspection_date AS TIMESTAMP) AS inspection_date,
+       CAST(grade_date AS TIMESTAMP) AS grade_date,
+       CAST(record_date AS TIMESTAMP) AS record_date,
 
        -- Request details
-       CAST(agency AS STRING) AS agency,
-       CAST(agency_name AS STRING) AS agency_name,
-       CAST(complaint_type AS STRING) AS complaint_type,
-       CAST(descriptor AS STRING) AS descriptor,
-       UPPER(TRIM(CAST(status AS STRING))) AS status,
-
+       CAST(violation_code AS STRING) AS violation_code,
+       CAST(violation_description AS STRING) AS violation_description,
+       CAST(critical_flag AS STRING) AS critical_flag,
+       CAST(score AS DECIMAL) AS score,
+       CAST(grade AS STRING) AS grade,
+       CAST(inspection_type AS STRING) AS inspection_type,
+    
        -- Location - clean zip code, handling several common zip code data problems
        CASE
-           WHEN UPPER(TRIM(CAST(incident_zip AS STRING))) IN ('N/A', 'NA') THEN NULL
-           WHEN UPPER(TRIM(CAST(incident_zip AS STRING))) = 'ANONYMOUS' THEN 'Anonymous'
-           WHEN LENGTH(CAST(incident_zip AS STRING)) = 5 THEN CAST(incident_zip AS STRING)
-           WHEN LENGTH(CAST(incident_zip AS STRING)) = 9 THEN CAST(incident_zip AS STRING)
-           WHEN LENGTH(CAST(incident_zip AS STRING)) = 10
-               AND REGEXP_CONTAINS(CAST(incident_zip AS STRING), r'^\d{5}-\d{4}')
-           THEN CAST(incident_zip AS STRING)
+           WHEN UPPER(TRIM(CAST(zipcode AS STRING))) IN ('N/A', 'NA') THEN NULL
+           WHEN UPPER(TRIM(CAST(zipcode AS STRING))) = 'ANONYMOUS' THEN 'Anonymous'
+           WHEN LENGTH(CAST(zipcode AS STRING)) = 5 THEN CAST(zipcode AS STRING)
+           WHEN LENGTH(CAST(zipcode AS STRING)) = 9 THEN CAST(zipcode AS STRING)
+           WHEN LENGTH(CAST(zipcode AS STRING)) = 10
+               AND REGEXP_CONTAINS(CAST(zipcode AS STRING), r'^\d{5}-\d{4}')
+           THEN CAST(zipcode AS STRING)
            ELSE NULL
-       END AS zip,
+       END AS zipcode,
 
        -- Location - standardized borough, just in case
        CASE
-           WHEN UPPER(TRIM(borough)) IN ('MANHATTAN', 'NEW YORK COUNTY') THEN 'Manhattan'
-           WHEN UPPER(TRIM(borough)) IN ('BRONX', 'THE BRONX') THEN 'Bronx'
-           WHEN UPPER(TRIM(borough)) IN ('BROOKLYN', 'KINGS COUNTY') THEN 'Brooklyn'
-           WHEN UPPER(TRIM(borough)) IN ('QUEENS', 'QUEEN', 'QUEENS COUNTY') THEN 'Queens'
-           WHEN UPPER(TRIM(borough)) IN ('STATEN ISLAND', 'RICHMOND COUNTY') THEN 'Staten Island'
+           WHEN UPPER(TRIM(boro)) IN ('MANHATTAN', 'NEW YORK COUNTY') THEN 'Manhattan'
+           WHEN UPPER(TRIM(boro)) IN ('BRONX', 'THE BRONX') THEN 'Bronx'
+           WHEN UPPER(TRIM(boro)) IN ('BROOKLYN', 'KINGS COUNTY') THEN 'Brooklyn'
+           WHEN UPPER(TRIM(boro)) IN ('QUEENS', 'QUEEN', 'QUEENS COUNTY') THEN 'Queens'
+           WHEN UPPER(TRIM(boro)) IN ('STATEN ISLAND', 'RICHMOND COUNTY') THEN 'Staten Island'
            ELSE 'UNKNOWN or CITYWIDE'
        END AS borough,
 
-       CAST(incident_address AS STRING) AS incident_address,
-       CAST(street_name AS STRING) AS street_name,
-       CAST(cross_street_1 AS STRING) AS cross_street_1,
-       CAST(cross_street_2 AS STRING) AS cross_street_2,
        CAST(latitude AS DECIMAL) AS latitude,
        CAST(longitude AS DECIMAL) AS longitude,
 
-       -- Clearer column name as well for this one
-       CAST(open_data_channel_type AS STRING) AS method_of_submission,
-
        -- Metadata
-       CURRENT_TIMESTAMP() AS _stg_loaded_at
+       CURRENT_TIMESTAMP() AS _stg_loaded_at -- might not need this line of code
 
    FROM source
 
    -- Filters
-   WHERE (agency = 'DOT' OR agency_name LIKE '%Transportation%')
-   AND unique_key IS NOT NULL
-   AND created_date IS NOT NULL
-   AND CAST(created_date AS DATE) >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 YEAR)
-   AND borough IS NOT NULL
+   WHERE camis IS NOT NULL
+   AND inspection_date IS NOT NULL
+   AND inspection_type IS NOT NULL
+   AND violation_code IS NOT NULL 
+   AND inspection_type IS NOT NULL 
+   AND CAST(inspection_date AS DATE) >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 YEAR)
+   AND boro IS NOT NULL
 
-   -- Deduplicate
-   QUALIFY ROW_NUMBER() OVER (PARTITION BY unique_key ORDER BY created_date DESC) = 1
 )
 
 SELECT * FROM cleaned
--- All should be part of this table after running: stg_nyc_311_dot
+-- All should be part of this table after running: nyc_restaurant_inspection_primary data

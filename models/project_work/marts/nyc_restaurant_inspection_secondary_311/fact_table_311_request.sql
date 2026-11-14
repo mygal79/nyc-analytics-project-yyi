@@ -28,14 +28,20 @@ dim_complaint_type AS (
 fact AS (
     
     SELECT
-        -- surrogate key
+        -- request_key (surrogate key)
         -- unique_key
         -- created_date_key
+        -- closed_date_key
         -- location_key
+        -- location_type
         -- complaint_type_key
-        -- agency
+        -- incident_address
         -- latitude
         -- longitude
+        -- request_status
+        -- is_closed
+        -- request_channel_key
+        -- resolution_description
 
     FROM stg_311 s
 
@@ -59,6 +65,6 @@ fact AS (
 
     LEFT JOIN dim_rquest_channel rc
         ON s.complaint_type IS NOT DISTINCT FROM ct.complaint_type
-        AND s.descriptor          IS NOT DISTINCT FROM ct.complaint_detail
+        AND s.descriptor          IS NOT DISTINCT FROM ct.descriptor
 
 )

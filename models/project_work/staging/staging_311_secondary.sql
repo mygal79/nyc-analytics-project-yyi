@@ -1,5 +1,6 @@
 -- Purpose: to clean and standardize nyc_restaurant_inspection_secondary_311
--- The grain is one 311 service request (complaint) responded by DOHMH for a Restaurant and Restaurant/Bar/Deli/Bakery location types.    
+-- Grain: one row per 311 service request (complaint), identified by unique_key.
+-- Scope: requests assigned to agency DOHMH with location_type Restaurant or Restaurant/Bar/Deli/Bakery (filtered at extraction).
 
 WITH source AS (
    SELECT * FROM {{ source('raw', 'nyc_restaurant_inspection_secondary_311') }}
@@ -75,7 +76,6 @@ cleaned AS (
        -- Clearer column name as well for this one
        CAST(open_data_channel_type AS STRING) AS method_of_submission,
 
-
        -- Metadata
        CURRENT_TIMESTAMP() AS _stg_loaded_at
 
@@ -83,7 +83,8 @@ cleaned AS (
 
    -- Filters
 
-   -- Remember: The grain is one 311 service request (complaint) responded by DOHMH for a Restaurant and Restaurant/Bar/Deli/Bakery location types.   
+   -- Remember: Grain is one row per 311 service request (complaint), identified by unique_key.
+   -- Scope: requests assigned to agency DOHMH with location_type Restaurant or Restaurant/Bar/Deli/Bakery.  
    -- However, we realized we do not need to filter by agency, agency_name, nor location_type because the source raw data 
    -- that KAVITA extracted from NYC Open Data was already filtered by agency at the time of extraction.
    -- However, to verify these assumtions and be able explain them in official documentation, we went to BQ and ran sql queries to verify them as follows:
