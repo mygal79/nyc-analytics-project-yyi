@@ -28,8 +28,37 @@ dim_complaint_type AS (
 fact AS (
     
     SELECT
-        -- FACT's own surrogate key, from the grain (this is deduped in staging)
+        -- surrogate key
+        -- unique_key
+        -- created_date_key
+        -- location_key
+        -- complaint_type_key
+        -- agency
+        -- latitude
+        -- longitude
 
+    FROM stg_311 s
 
+    -- Left join because you want all the rows from staging table..
+    -- JOIN ON the itmes that make up surrogate key in the dimension
+    LEFT JOIN dim_date created_d
+        ON CAST(s.created_date AS DATE) = created_d.full_date
+    LEFT JOIN dim_date closed_d
+        ON CAST(s.closed_date AS DATE) = closed_d.full_date
+
+    -- IS NOT DISTINCT FROM so a NULL zip/ council_district matches  
+    -- Could leave out the NULL exception and make these =s
+    LEFT JOIN dim_location l
+        ON s.borough    IS NOT DISTINCT FROM l.borough
+        
+        AND s.zipcode   IS NOT DISTINCT FROM l.zipcode
+    
+    LEFT JOIN dim_rquest_channel rc
+        ON s.method_of_submission IS NOT DISTINCT FROM rc.channel_type
+        AND s.descriptor          IS NOT DISTINCT FROM rc.descriptor
+
+    LEFT JOIN dim_rquest_channel rc
+        ON s.complaint_type IS NOT DISTINCT FROM ct.complaint_type
+        AND s.descriptor          IS NOT DISTINCT FROM ct.complaint_detail
 
 )

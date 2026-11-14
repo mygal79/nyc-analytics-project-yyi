@@ -36,12 +36,12 @@ enriched AS (
             WHEN LOWER(descriptor) LIKE '%ventilation%' THEN 'Ventilation'
             WHEN LOWER(descriptor) LIKE '%worker%' THEN 'Worker issues'
             WHEN LOWER(descriptor) LIKE '%allergy%' THEN 'Allergy info'
-            WHEN LOWER(descriptor) LIKE '%wewage%' THEN 'Sewage/Water/Plumbing'
+            WHEN LOWER(descriptor) LIKE '%sewage%' THEN 'Sewage/Water/Plumbing'
             WHEN LOWER(descriptor) LIKE '%toxic%' THEN 'Toxic Chemicals/Materials'
             WHEN LOWER(descriptor) LIKE '%water%' THEN 'Sewage/Water/Plumbing'
             WHEN LOWER(descriptor) LIKE '%plumbing%' THEN 'Sewage/Water/Plumbing'
             WHEN LOWER(descriptor) LIKE '%pesticide%' THEN 'Toxic Chemicals/Materials'
-            WHEN LOWER(descriptor) LIKE '%Other%' THEN 'other'
+            WHEN LOWER(descriptor) LIKE '%other%' THEN 'other'
 
             ELSE 'other'
         END AS complaint_detail
