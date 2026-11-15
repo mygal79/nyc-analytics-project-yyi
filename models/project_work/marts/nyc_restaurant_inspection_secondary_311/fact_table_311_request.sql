@@ -29,20 +29,35 @@ fact AS (
     
     SELECT
         -- request_key (surrogate key)
-        -- unique_key
+        {{ dbt_utils.generate_surrogate_key(['s.unique_key']) }} AS request_key,
+        --Degenerate dimension (business identifier)
+        -- unique_id
+        s.unique_key as unique_id,
         -- created_date_key
+        created_d.date_key AS created_date_key,
         -- closed_date_key
-        -- location_key
-        -- location_type
+        -- Open requests have no closed date -> unknown memeber
+        CASE WHEN s.closed_date IS NULL THEN '-1' ELSE closed_d.date_key END AS close_date_key, 
+        -- location_key (Always will have a location key)
+        l.location_key,
         -- complaint_type_key
-        -- incident_address
-        -- latitude
-        -- longitude
-        -- request_status
-        -- is_closed
+        ct.complaint_type_key,
         -- request_channel_key
-        -- resolution_description
+        rc.request_channel_key,
 
+        -- Plus the data we're passing on right from staging -> fact table
+        --s.location_type
+        --s.incident_address
+        --s.latitude
+        --s.longitude
+        --s.status AS s.request_status
+        --s.resolution_description
+
+        -- Calculated fields
+        --s.status == 'CLOSED' AS is_closed
+        
+        --timestamp_diff(s.closed_date, s.created_date, HOUR) AS hours_to_close  
+    
     FROM stg_311 s
 
     -- Left join because you want all the rows from staging table..
@@ -59,12 +74,14 @@ fact AS (
         
         AND s.zipcode   IS NOT DISTINCT FROM l.zipcode
     
-    LEFT JOIN dim_rquest_channel rc
+    LEFT JOIN dim_request_channel rc
         ON s.method_of_submission IS NOT DISTINCT FROM rc.channel_type
         AND s.descriptor          IS NOT DISTINCT FROM rc.descriptor
 
-    LEFT JOIN dim_rquest_channel rc
+    LEFT JOIN dim_complaint_type ct
         ON s.complaint_type IS NOT DISTINCT FROM ct.complaint_type
-        AND s.descriptor          IS NOT DISTINCT FROM ct.descriptor
+        AND s.descriptor    IS NOT DISTINCT FROM ct.descriptor
 
 )
+
+SELECT * FROM fact
