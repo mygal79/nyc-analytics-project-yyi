@@ -46,16 +46,16 @@ fact AS (
         rc.request_channel_key,
 
         -- Plus the data we're passing on right from staging -> fact table
-        --s.location_type
-        --s.incident_address
-        --s.latitude
-        --s.longitude
-        --s.status AS s.request_status
-        --s.resolution_description
+        s.location_type,
+        s.incident_address,
+        s.latitude,
+        s.longitude,
+        s.status AS request_status,
+        s.resolution_description,
 
         -- Calculated fields
-        --s.status == 'CLOSED' AS is_closed
-        
+        s.status = 'CLOSED' AS is_closed
+
         --timestamp_diff(s.closed_date, s.created_date, HOUR) AS hours_to_close  
     
     FROM stg_311 s
@@ -76,7 +76,7 @@ fact AS (
     
     LEFT JOIN dim_request_channel rc
         ON s.method_of_submission IS NOT DISTINCT FROM rc.channel_type
-        AND s.descriptor          IS NOT DISTINCT FROM rc.descriptor
+        
 
     LEFT JOIN dim_complaint_type ct
         ON s.complaint_type IS NOT DISTINCT FROM ct.complaint_type
