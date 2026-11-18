@@ -29,7 +29,7 @@ enriched AS (
             WHEN LOWER(descriptor) LIKE '% or %' THEN 'Food Poisoning'
             WHEN LOWER(descriptor) LIKE '%food%' THEN 'Food related'
             WHEN LOWER(descriptor) LIKE '%animal%' THEN 'Animal'
-            WHEN LOWER(descriptor) LIKE '%permit%' THEN 'No permit'
+            WHEN LOWER(descriptor) LIKE '%permit%' THEN 'No permit/Liscence'
             WHEN LOWER(descriptor) LIKE '%odor%' THEN 'Odor'
             WHEN LOWER(descriptor) LIKE '%smoking%' THEN 'Smoking'
             WHEN LOWER(descriptor) LIKE '%handwashing%' THEN 'Handwashing'
@@ -44,7 +44,7 @@ enriched AS (
             WHEN LOWER(descriptor) LIKE '%other%' THEN 'Other'
 
             ELSE 'other'
-        END AS complaint_detail
+        END AS complaint_category
 
     FROM distinct_complaint_types
 
@@ -57,9 +57,9 @@ dim_complaint_type AS (
             'complaint_type', 'descriptor'
         ]) }} AS complaint_type_key,
 
-        complaint_type,
+        complaint_type AS complaint,
         descriptor,
-        complaint_detail
+        complaint_category
 
     FROM enriched
 
