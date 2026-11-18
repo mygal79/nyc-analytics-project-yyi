@@ -45,6 +45,7 @@ fact AS (
         s.camis AS camis_id,
 
         -- Inspection attributes and measures
+       
         s.violation_description,
         s.action AS outcome_action,
         s.score,
