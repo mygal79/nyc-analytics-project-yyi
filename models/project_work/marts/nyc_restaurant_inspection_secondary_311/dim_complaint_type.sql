@@ -26,7 +26,7 @@ enriched AS (
         -- Match is case insensitive
 
         CASE
-            WHEN LOWER(descriptor) LIKE '%sighting %' THEN 'Rodent'
+            WHEN LOWER(descriptor) LIKE '%sighting%' THEN 'Rodent'
             WHEN LOWER(descriptor) LIKE '%handwashing%' THEN 'Hygine/Handwashing'
             WHEN LOWER(descriptor) LIKE '% hands %' THEN 'Hygine/Handwashing'
             WHEN LOWER(descriptor) LIKE '%prep%' THEN 'Facility'
