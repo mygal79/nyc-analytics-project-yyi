@@ -79,7 +79,7 @@ fact AS (
         
 
     LEFT JOIN dim_complaint_type ct
-        ON s.complaint_type IS NOT DISTINCT FROM ct.complaint_type
+        ON s.complaint_type IS NOT DISTINCT FROM ct.complaint
         AND s.descriptor    IS NOT DISTINCT FROM ct.descriptor
 
 )
