@@ -26,22 +26,31 @@ enriched AS (
         -- Match is case insensitive
 
         CASE
-            WHEN LOWER(descriptor) LIKE '% or %' THEN 'Food Poisoning'
+            WHEN LOWER(descriptor) LIKE '%sighting %' THEN 'Rodent'
+            WHEN LOWER(descriptor) LIKE '%handwashing%' THEN 'Hygine/Handwashing'
+            WHEN LOWER(descriptor) LIKE '% hands %' THEN 'Hygine/Handwashing'
+            WHEN LOWER(descriptor) LIKE '%prep%' THEN 'Facility'
+            WHEN LOWER(descriptor) LIKE '%toilet%' THEN 'Toilet'
+            WHEN LOWER(descriptor) LIKE '%1 or %' THEN 'Food Poisoning'
+            WHEN LOWER(descriptor) LIKE '%2 or %' THEN 'Food Poisoning'
+            WHEN LOWER(descriptor) LIKE '%3 or %' THEN 'Food Poisoning'
+            WHEN LOWER(descriptor) LIKE '% rat %' THEN 'Rodent'
+            WHEN LOWER(descriptor) LIKE '%rodent%' THEN 'Rodent'
+            WHEN LOWER(descriptor) LIKE '%mouse%' THEN 'Rodent'
+            WHEN LOWER(descriptor) LIKE '%worker%' THEN 'Worker issues'
             WHEN LOWER(descriptor) LIKE '%food%' THEN 'Food related'
-            WHEN LOWER(descriptor) LIKE '%animal%' THEN 'Animal'
+            WHEN LOWER(descriptor) LIKE '%animal%' THEN 'Animal/Pets'
             WHEN LOWER(descriptor) LIKE '%permit%' THEN 'No permit/Liscence'
             WHEN LOWER(descriptor) LIKE '%odor%' THEN 'Odor'
             WHEN LOWER(descriptor) LIKE '%smoking%' THEN 'Smoking'
-            WHEN LOWER(descriptor) LIKE '%handwashing%' THEN 'Handwashing'
             WHEN LOWER(descriptor) LIKE '%ventilation%' THEN 'Ventilation'
-            WHEN LOWER(descriptor) LIKE '%worker%' THEN 'Worker issues'
             WHEN LOWER(descriptor) LIKE '%allergy%' THEN 'Allergy info'
             WHEN LOWER(descriptor) LIKE '%sewage%' THEN 'Sewage/Water/Plumbing'
             WHEN LOWER(descriptor) LIKE '%toxic%' THEN 'Toxic Chemicals/Materials'
             WHEN LOWER(descriptor) LIKE '%water%' THEN 'Sewage/Water/Plumbing'
             WHEN LOWER(descriptor) LIKE '%plumbing%' THEN 'Sewage/Water/Plumbing'
             WHEN LOWER(descriptor) LIKE '%pesticide%' THEN 'Toxic Chemicals/Materials'
-            WHEN LOWER(descriptor) LIKE '%other%' THEN 'Other'
+            WHEN LOWER(descriptor) LIKE '%other%' THEN 'other'
 
             ELSE 'other'
         END AS complaint_category
@@ -60,6 +69,7 @@ dim_complaint_type AS (
         complaint_type AS complaint,
         descriptor,
         complaint_category
+        
 
     FROM enriched
 
